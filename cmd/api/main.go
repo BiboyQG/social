@@ -2,11 +2,13 @@ package main
 
 import (
 	"log"
+
+	"github.com/biboyqg/social/internal/env"
 )
 
 func main() {
 	cfg := config{
-		addr: ":8080",
+		addr: env.GetString("ADDR", ":8081"),
 	}
 	app := &application{
 		config: cfg,
