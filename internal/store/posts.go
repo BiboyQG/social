@@ -81,7 +81,14 @@ func (s *PostStore) Update(ctx context.Context, post *Post) error {
 		SET title = $1, content = $2, tags = $3, updated_at = NOW()
 		WHERE id = $4
 	`
-	_, err := s.db.ExecContext(ctx, query, post.Title, post.Content, pq.Array(post.Tags), post.ID)
+	_, err := s.db.ExecContext(
+		ctx,
+		query,
+		post.Title,
+		post.Content,
+		pq.Array(post.Tags),
+		post.ID,
+	)
 	if err != nil {
 		return err
 	}
