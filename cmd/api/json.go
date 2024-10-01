@@ -18,11 +18,7 @@ func readJSON(w http.ResponseWriter, r *http.Request, data any) error {
 	dec := json.NewDecoder(r.Body)
 	dec.DisallowUnknownFields()
 
-	err := dec.Decode(data)
-	if err != nil {
-		return err
-	}
-	return nil
+	return dec.Decode(data)
 }
 
 func errorJSON(w http.ResponseWriter, status int, message string) error {
