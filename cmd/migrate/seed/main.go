@@ -6,7 +6,6 @@ import (
 	"github.com/biboyqg/social/internal/db"
 	"github.com/biboyqg/social/internal/env"
 	"github.com/biboyqg/social/internal/store"
-	_ "github.com/lib/pq"
 )
 
 func main() {
