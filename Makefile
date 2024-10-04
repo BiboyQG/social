@@ -15,3 +15,7 @@ migrate-up:
 migrate-down:
 	@echo "Migrating database down..."
 	@migrate -database $(DB_ADDR) -path $(MIGRATIONS_DIR) down
+
+.PHONY: seed
+seed:
+	@go run cmd/migrate/seed/main.go
