@@ -14,6 +14,18 @@ type userContextKey string
 
 const userCtxKey userContextKey = "user"
 
+//	@Summary		Get User
+//	@Description	Get the user by user ID
+//	@Tags			Users
+//	@Accept			json
+//	@Produce		json
+//	@Param			userID	path		int	true	"User ID"
+//	@Success		200		{object}	store.User
+//	@Failure		400		{object}	map[string]string
+//	@Failure		404		{object}	map[string]string
+//	@Failure		500		{object}	map[string]string
+//	@Security		ApiKeyAuth
+//	@Router			/users/{userID} [get]
 func (app *application) getUserHandler(w http.ResponseWriter, r *http.Request) {
 	user, err := app.getUserFromCtx(r)
 	if err != nil {
@@ -55,6 +67,18 @@ type authUserPayload struct {
 	UserID int64 `json:"user_id"`
 }
 
+//	@Summary		Follow User
+//	@Description	Follow a user by user ID
+//	@Tags			Users
+//	@Accept			json
+//	@Produce		json
+//	@Param			userID	path	int	true	"User ID"
+//	@Success		204
+//	@Failure		400	{object}	map[string]string
+//	@Failure		404	{object}	map[string]string
+//	@Failure		500	{object}	map[string]string
+//	@Security		ApiKeyAuth
+//	@Router			/users/{userID}/follow [put]
 func (app *application) followUserHandler(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	userToFollow, err := app.getUserFromCtx(r)
@@ -85,6 +109,18 @@ func (app *application) followUserHandler(w http.ResponseWriter, r *http.Request
 	}
 }
 
+//	@Summary		Unfollow User
+//	@Description	Unfollow a user by user ID
+//	@Tags			Users
+//	@Accept			json
+//	@Produce		json
+//	@Param			userID	path	int	true	"User ID"
+//	@Success		204
+//	@Failure		400	{object}	map[string]string
+//	@Failure		404	{object}	map[string]string
+//	@Failure		500	{object}	map[string]string
+//	@Security		ApiKeyAuth
+//	@Router			/users/{userID}/unfollow [put]
 func (app *application) unfollowUserHandler(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
@@ -111,6 +147,18 @@ func (app *application) unfollowUserHandler(w http.ResponseWriter, r *http.Reque
 	}
 }
 
+//	@Summary		Get Followers
+//	@Description	Get the followers of a user by user ID
+//	@Tags			Users
+//	@Accept			json
+//	@Produce		json
+//	@Param			userID	path		int	true	"User ID"
+//	@Success		200		{array}		store.User
+//	@Failure		400		{object}	map[string]string
+//	@Failure		404		{object}	map[string]string
+//	@Failure		500		{object}	map[string]string
+//	@Security		ApiKeyAuth
+//	@Router			/users/{userID}/followers [get]
 func (app *application) getFollowersHandler(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	user, err := app.getUserFromCtx(r)

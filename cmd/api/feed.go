@@ -6,6 +6,20 @@ import (
 	"github.com/biboyqg/social/internal/store"
 )
 
+//	@Summary		Get User Feed
+//	@Description	Get the feed of a user by user ID
+//	@Tags			Feed
+//	@Accept			json
+//	@Produce		json
+//	@Param			limit	query		int			false	"Limit"
+//	@Param			offset	query		int			false	"Offset"
+//	@Param			sort	query		string		false	"Sort"
+//	@Param			tags	query		[]string	false	"Tags"
+//	@Param			search	query		string		false	"Search"
+//	@Success		200		{array}		store.PostWithMetadata
+//	@Failure		400		{object}	map[string]string
+//	@Failure		500		{object}	map[string]string
+//	@Router			/users/feed [get]
 func (app *application) getUserFeedHandler(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 

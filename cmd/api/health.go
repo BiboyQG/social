@@ -4,6 +4,14 @@ import (
 	"net/http"
 )
 
+//	@Summary		Health Check
+//	@Description	Check the health of the API
+//	@Tags			Health
+//	@Accept			json
+//	@Produce		json
+//	@Success		200	{object}	map[string]string
+//	@Failure		500	{object}	map[string]string
+//	@Router			/health [get]
 func (app *application) healthCheckHandler(w http.ResponseWriter, r *http.Request) {
 	data := map[string]string{
 		"status":  "ok",

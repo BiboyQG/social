@@ -25,6 +25,17 @@ type updatePostPayload struct {
 	Tags    []string  `json:"tags"`
 }
 
+//	@Summary		Create Post
+//	@Description	Create a new post
+//	@Tags			Posts
+//	@Accept			json
+//	@Produce		json
+//	@Param			post	body		createPostPayload	true	"Post"
+//	@Success		201		{object}	store.Post
+//	@Failure		400		{object}	map[string]string
+//	@Failure		500		{object}	map[string]string
+//	@Security		ApiKeyAuth
+//	@Router			/posts [post]
 func (app *application) createPostHandler(w http.ResponseWriter, r *http.Request) {
 	var payload createPostPayload
 
@@ -60,6 +71,18 @@ func (app *application) createPostHandler(w http.ResponseWriter, r *http.Request
 	}
 }
 
+//	@Summary		Get Post
+//	@Description	Get the post by post ID
+//	@Tags			Posts
+//	@Accept			json
+//	@Produce		json
+//	@Param			postID	path		int	true	"Post ID"
+//	@Success		200		{object}	store.Post
+//	@Failure		400		{object}	map[string]string
+//	@Failure		404		{object}	map[string]string
+//	@Failure		500		{object}	map[string]string
+//	@Security		ApiKeyAuth
+//	@Router			/posts/{postID} [get]
 func (app *application) getPostHandler(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
@@ -82,6 +105,19 @@ func (app *application) getPostHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+//	@Summary		Update Post
+//	@Description	Update the post by post ID
+//	@Tags			Posts
+//	@Accept			json
+//	@Produce		json
+//	@Param			postID	path		int					true	"Post ID"
+//	@Param			post	body		updatePostPayload	true	"Post"
+//	@Success		200		{object}	store.Post
+//	@Failure		400		{object}	map[string]string
+//	@Failure		404		{object}	map[string]string
+//	@Failure		500		{object}	map[string]string
+//	@Security		ApiKeyAuth
+//	@Router			/posts/{postID} [put]
 func (app *application) updatePostHandler(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
@@ -128,6 +164,18 @@ func (app *application) updatePostHandler(w http.ResponseWriter, r *http.Request
 	}
 }
 
+//	@Summary		Delete Post
+//	@Description	Delete the post by post ID
+//	@Tags			Posts
+//	@Accept			json
+//	@Produce		json
+//	@Param			postID	path		int	true	"Post ID"
+//	@Success		200		{object}	map[string]string
+//	@Failure		400		{object}	map[string]string
+//	@Failure		404		{object}	map[string]string
+//	@Failure		500		{object}	map[string]string
+//	@Security		ApiKeyAuth
+//	@Router			/posts/{postID} [delete]
 func (app *application) deletePostHandler(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
