@@ -139,7 +139,7 @@ func (s *PostStore) Delete(ctx context.Context, id int64) error {
 	return nil
 }
 
-func (s *PostStore) GetUserFeed(ctx context.Context, userID int64) ([]PostWithMetadata, error) {
+func (s *PostStore) GetUserFeed(ctx context.Context, userID int64, p PaginatedFeedQuery) ([]PostWithMetadata, error) {
 	query := `
 		SELECT p.id, p.content, p.title, p.user_id, p.tags, p.created_at, p.updated_at, u.username, COUNT(c.id) AS comments_count
 		FROM posts p
@@ -147,12 +147,13 @@ func (s *PostStore) GetUserFeed(ctx context.Context, userID int64) ([]PostWithMe
 		LEFT JOIN users u ON u.id = p.user_id
 		LEFT JOIN comments c ON c.post_id = p.id
 		GROUP BY p.id, p.content, p.title, p.user_id, p.tags, p.created_at, p.updated_at, u.username
-		ORDER BY p.updated_at DESC
+		ORDER BY p.updated_at ` + p.Sort + `
+		LIMIT $2 OFFSET $3
 	`
 	ctx, cancel := context.WithTimeout(ctx, QueryTimeoutDuration)
 	defer cancel()
 
-	rows, err := s.db.QueryContext(ctx, query, userID)
+	rows, err := s.db.QueryContext(ctx, query, userID, p.Limit, p.Offset)
 	if err != nil {
 		return nil, err
 	}
