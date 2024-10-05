@@ -1,11 +1,10 @@
 package main
 
 import (
-	"log"
-
 	"github.com/biboyqg/social/internal/db"
 	"github.com/biboyqg/social/internal/env"
 	"github.com/biboyqg/social/internal/store"
+	"go.uber.org/zap"
 )
 
 //	@title			Social Network API
@@ -40,6 +39,9 @@ func main() {
 		version: env.GetString("VERSION", "0.0.1"),
 	}
 
+	logger := zap.Must(zap.NewProduction()).Sugar()
+	defer logger.Sync()
+
 	db, err := db.New(
 		cfg.db.addr,
 		cfg.db.maxOpenConns,
@@ -47,19 +49,20 @@ func main() {
 		cfg.db.maxIdleTime,
 	)
 	if err != nil {
-		log.Panic(err)
+		logger.Fatal(err)
 	}
 	defer db.Close()
-	log.Println("database connection pool established")
+	logger.Info("database connection pool established")
 
 	store := store.NewStorage(db)
 
 	app := &application{
 		config: cfg,
 		store:  store,
+		logger: logger,
 	}
 
 	mux := app.mount()
 
-	log.Fatal(app.run(mux))
+	logger.Fatal(app.run(mux))
 }

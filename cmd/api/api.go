@@ -2,20 +2,21 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"net/http"
 	"time"
 
+	"github.com/biboyqg/social/docs"
 	"github.com/biboyqg/social/internal/store"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	httpSwagger "github.com/swaggo/http-swagger/v2"
-	"github.com/biboyqg/social/docs"
+	"go.uber.org/zap"
 )
 
 type application struct {
 	config config
 	store  store.Storage
+	logger *zap.SugaredLogger
 }
 
 type config struct {
@@ -94,7 +95,7 @@ func (app *application) run(r http.Handler) error {
 		IdleTimeout:  time.Minute,
 	}
 
-	log.Printf("server running on %s", app.config.addr)
+	app.logger.Infow("server has started", "addr", app.config.addr, "env", app.config.env, "version", app.config.version)
 
 	return srv.ListenAndServe()
 }
