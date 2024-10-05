@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"fmt"
 
 	"github.com/lib/pq"
 )
@@ -146,6 +147,9 @@ func (s *PostStore) GetUserFeed(ctx context.Context, userID int64, p PaginatedFe
 		JOIN followers f ON f.user_id = p.user_id OR p.user_id = $1
 		LEFT JOIN users u ON u.id = p.user_id
 		LEFT JOIN comments c ON c.post_id = p.id
+		WHERE 
+			(p.title ILIKE '%' || $4 || '%' OR p.content ILIKE '%' || $4 || '%') AND
+			(p.tags @> $5 OR $5 = '{}')
 		GROUP BY p.id, p.content, p.title, p.user_id, p.tags, p.created_at, p.updated_at, u.username
 		ORDER BY p.updated_at ` + p.Sort + `
 		LIMIT $2 OFFSET $3
@@ -153,7 +157,9 @@ func (s *PostStore) GetUserFeed(ctx context.Context, userID int64, p PaginatedFe
 	ctx, cancel := context.WithTimeout(ctx, QueryTimeoutDuration)
 	defer cancel()
 
-	rows, err := s.db.QueryContext(ctx, query, userID, p.Limit, p.Offset)
+	fmt.Println(p)
+
+	rows, err := s.db.QueryContext(ctx, query, userID, p.Limit, p.Offset, p.Search, pq.Array(p.Tags))
 	if err != nil {
 		return nil, err
 	}
