@@ -19,3 +19,8 @@ func (app *application) badRequest(w http.ResponseWriter, r *http.Request, err e
 	log.Printf("bad request error: %s path: %s error: %s", r.RemoteAddr, r.URL.Path, err.Error())
 	errorJSON(w, http.StatusBadRequest, err.Error())
 }
+
+func (app *application) conflict(w http.ResponseWriter, r *http.Request, err error) {
+	log.Printf("conflict error: %s path: %s error: %s", r.RemoteAddr, r.URL.Path, err.Error())
+	errorJSON(w, http.StatusConflict, err.Error())
+}
