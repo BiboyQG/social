@@ -8,9 +8,28 @@ import (
 	"github.com/biboyqg/social/internal/store"
 )
 
+//	@title			Social Network API
+//	@description	API for a Social Network server.
+//	@termsOfService	https://github.com/biboyqg/social/blob/main/TERMS_OF_SERVICE.md
+
+//	@contact.name	API Support
+//	@contact.url	https://github.com/biboyqg/social
+//	@contact.email	banghao2@illinois.edu
+
+//	@license.name	MIT
+//	@license.url	https://github.com/biboyqg/social/blob/main/LICENSE
+
+//	@host		localhost:8081
+//	@BasePath	/v1
+
+// @securityDefinitions.apikey	ApiKeyAuth
+// @in							header
+// @name						Authorization
+// @description				JWT authorization header
 func main() {
 	cfg := config{
-		addr: env.GetString("ADDR", ":8081"),
+		addr:   env.GetString("ADDR", ":8081"),
+		apiURL: env.GetString("EXTERNAL_URL", "localhost:8081"),
 		db: dbConfig{
 			addr:         env.GetString("DB_ADDR", "postgresql://admin:adminpassword@localhost:5432/socialnetwork?sslmode=disable"),
 			maxOpenConns: env.GetInt("DB_MAX_OPEN_CONNS", 30),

@@ -1,0 +1,28 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "description": "API for a Social Network server.",
+        "title": "Social Network API",
+        "termsOfService": "https://github.com/biboyqg/social/blob/main/TERMS_OF_SERVICE.md",
+        "contact": {
+            "name": "API Support",
+            "url": "https://github.com/biboyqg/social",
+            "email": "banghao2@illinois.edu"
+        },
+        "license": {
+            "name": "MIT",
+            "url": "https://github.com/biboyqg/social/blob/main/LICENSE"
+        }
+    },
+    "host": "localhost:8081",
+    "basePath": "/v1",
+    "paths": {},
+    "securityDefinitions": {
+        "ApiKeyAuth": {
+            "description": "JWT authorization header",
+            "type": "apiKey",
+            "name": "Authorization",
+            "in": "header"
+        }
+    }
+}

@@ -1,0 +1,21 @@
+basePath: /v1
+host: localhost:8081
+info:
+  contact:
+    email: banghao2@illinois.edu
+    name: API Support
+    url: https://github.com/biboyqg/social
+  description: API for a Social Network server.
+  license:
+    name: MIT
+    url: https://github.com/biboyqg/social/blob/main/LICENSE
+  termsOfService: https://github.com/biboyqg/social/blob/main/TERMS_OF_SERVICE.md
+  title: Social Network API
+paths: {}
+securityDefinitions:
+  ApiKeyAuth:
+    description: JWT authorization header
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"
