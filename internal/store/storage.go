@@ -19,6 +19,7 @@ type Storage struct {
 		GetByID(ctx context.Context, id int64) (*Post, error)
 		Update(ctx context.Context, post *Post) error
 		Delete(ctx context.Context, id int64) error
+		GetUserFeed(ctx context.Context, userID int64) ([]PostWithMetadata, error)
 	}
 	Users interface {
 		Create(ctx context.Context, user *User) error
