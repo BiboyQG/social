@@ -114,7 +114,16 @@ func Seed(store store.Storage, db *sql.DB) error {
 		}
 	}
 
-	log.Println("successfully seeded", len(users), "users", len(posts), "posts", len(comments), "comments")
+	followers := generateFollowers(100, users)
+
+	for _, follower := range followers {
+		if err := store.Followers.Follow(ctx, follower.UserID, follower.FollowerID); err != nil {
+			log.Println("error following user", err)
+			return err
+		}
+	}
+
+	log.Println("successfully seeded", len(users), "users", len(posts), "posts", len(comments), "comments", len(followers), "followship!")
 
 	return nil
 }
@@ -163,4 +172,18 @@ func generateComments(n int, posts []*store.Post, users []*store.User) []*store.
 	}
 
 	return cms
+}
+
+func generateFollowers(n int, users []*store.User) []*store.Follower {
+	followers := make([]*store.Follower, n)
+
+	for i := 0; i < n; i++ {
+		user := users[rand.Intn(len(users))]
+		followers[i] = &store.Follower{
+			UserID: user.ID,
+			FollowerID: users[rand.Intn(len(users))].ID,
+		}
+	}
+
+	return followers
 }
