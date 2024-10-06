@@ -1,5 +1,23 @@
 basePath: /v1
 definitions:
+  main.RegisterUserPayload:
+    properties:
+      email:
+        maxLength: 255
+        type: string
+      password:
+        maxLength: 72
+        minLength: 3
+        type: string
+      username:
+        maxLength: 32
+        minLength: 3
+        type: string
+    required:
+    - email
+    - password
+    - username
+    type: object
   main.createPostPayload:
     properties:
       content:
@@ -113,7 +131,7 @@ definitions:
       username:
         type: string
     type: object
-host: localhost:8081
+host: localhost:8080
 info:
   contact:
     email: banghao2@illinois.edu
@@ -126,6 +144,40 @@ info:
   termsOfService: https://github.com/biboyqg/social/blob/main/TERMS_OF_SERVICE.md
   title: Social Network API
 paths:
+  /authentication/user:
+    post:
+      consumes:
+      - application/json
+      description: Register a new user
+      parameters:
+      - description: User credentials
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/main.RegisterUserPayload'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/store.User'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Register User
+      tags:
+      - Authentication
   /health:
     get:
       consumes:

@@ -1,6 +1,8 @@
 package main
 
 import (
+	"time"
+
 	"github.com/biboyqg/social/internal/db"
 	"github.com/biboyqg/social/internal/env"
 	"github.com/biboyqg/social/internal/store"
@@ -18,7 +20,7 @@ import (
 //	@license.name	MIT
 //	@license.url	https://github.com/biboyqg/social/blob/main/LICENSE
 
-//	@host		localhost:8081
+//	@host		localhost:8080
 //	@BasePath	/v1
 
 // @securityDefinitions.apikey	ApiKeyAuth
@@ -37,6 +39,9 @@ func main() {
 		},
 		env:     env.GetString("ENV", "dev"),
 		version: env.GetString("VERSION", "0.0.1"),
+		mail: mailConfig{
+			exp: env.GetDuration("MAIL_EXP", 3*24*time.Hour),
+		},
 	}
 
 	logger := zap.Must(zap.NewProduction()).Sugar()
