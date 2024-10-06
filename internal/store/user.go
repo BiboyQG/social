@@ -2,6 +2,8 @@ package store
 
 import (
 	"context"
+	"crypto/sha256"
+	"encoding/hex"
 	"database/sql"
 	"errors"
 	"time"
@@ -20,6 +22,7 @@ type User struct {
 	Email     string   `json:"email"`
 	Password  Password `json:"-"`
 	CreatedAt string   `json:"created_at"`
+	IsActive  bool     `json:"is_active"`
 }
 
 type Password struct {
@@ -130,6 +133,89 @@ func (s *UserStore) createUserInvitation(ctx context.Context, tx *sql.Tx, userID
 	defer cancel()
 
 	_, err := tx.ExecContext(ctx, query, userID, token, time.Now().Add(invitationExp))
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (s *UserStore) Activate(ctx context.Context, token string) error {
+	return withTx(ctx, s.db, func(tx *sql.Tx) error {
+		user, err := s.getUserByToken(ctx, tx, token)
+		if err != nil {
+			return err
+		}
+
+		user.IsActive = true
+		
+		if err := s.update(ctx, tx, user); err != nil {
+			return err
+		}
+		
+		if err := s.deleteUserInvitations(ctx, tx, user.ID); err != nil {
+			return err
+		}
+		
+		return nil
+	})
+}
+
+func (s *UserStore) getUserByToken(ctx context.Context, tx *sql.Tx, token string) (*User, error) {
+	query := `
+		SELECT u.id, u.username, u.email, u.created_at, u.is_active
+		FROM users u
+		JOIN user_invitations ui ON u.id = ui.user_id
+		WHERE ui.token = $1 AND ui.expires_at > now()
+	`
+	ctx, cancel := context.WithTimeout(ctx, QueryTimeoutDuration)
+	defer cancel()
+
+	hash := sha256.Sum256([]byte(token))
+	hashedToken := hex.EncodeToString(hash[:])
+
+	row := tx.QueryRowContext(ctx, query, hashedToken)
+	user := &User{}
+	err := row.Scan(
+		&user.ID,
+		&user.Username,
+		&user.Email,
+		&user.CreatedAt,
+		&user.IsActive,
+	)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, ErrNoRecord
+		}
+		return nil, err
+	}
+	return user, nil
+}
+
+func (s *UserStore) update(ctx context.Context, tx *sql.Tx, user *User) error {
+	query := `
+		UPDATE users
+		SET is_active = $2
+		WHERE id = $1
+	`
+	ctx, cancel := context.WithTimeout(ctx, QueryTimeoutDuration)
+	defer cancel()
+
+	_, err := tx.ExecContext(ctx, query, user.ID, user.IsActive)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (s *UserStore) deleteUserInvitations(ctx context.Context, tx *sql.Tx, userID int64) error {
+	query := `
+		DELETE FROM user_invitations
+		WHERE user_id = $1
+	`
+	ctx, cancel := context.WithTimeout(ctx, QueryTimeoutDuration)
+	defer cancel()
+
+	_, err := tx.ExecContext(ctx, query, userID)
 	if err != nil {
 		return err
 	}

@@ -186,3 +186,35 @@ func (app *application) getUserFromCtx(r *http.Request) (*store.User, error) {
 	}
 	return user, nil
 }
+
+//	@Summary		Activate User
+//	@Description	Activate a user by user ID
+//	@Tags			Users
+//	@Accept			json
+//	@Produce		json
+//	@Param			token	path		string	true	"Invitation Token"
+//	@Success		201		{string}	string	"User activated"
+//	@Failure		400		{object}	map[string]string
+//	@Failure		404		{object}	map[string]string
+//	@Failure		500		{object}	map[string]string
+//	@Security		ApiKeyAuth
+//	@Router			/users/activate/{token} [put]
+func (app *application) activateUserHandler(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	token := chi.URLParam(r, "token")
+
+	if err := app.store.Users.Activate(ctx, token); err != nil {
+		switch {
+		case errors.Is(err, store.ErrNoRecord):
+			app.notFound(w, r, err)
+		default:
+			app.internalServerError(w, r, err)
+		}
+		return
+	}
+
+	if err := app.jsonResponse(w, http.StatusCreated, nil); err != nil {
+		app.internalServerError(w, r, err)
+	}
+}

@@ -128,6 +128,8 @@ definitions:
         type: string
       id:
         type: integer
+      is_active:
+        type: boolean
       username:
         type: string
     type: object
@@ -526,6 +528,47 @@ paths:
       security:
       - ApiKeyAuth: []
       summary: Unfollow User
+      tags:
+      - Users
+  /users/activate/{token}:
+    put:
+      consumes:
+      - application/json
+      description: Activate a user by user ID
+      parameters:
+      - description: Invitation Token
+        in: path
+        name: token
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: User activated
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - ApiKeyAuth: []
+      summary: Activate User
       tags:
       - Users
   /users/feed:
