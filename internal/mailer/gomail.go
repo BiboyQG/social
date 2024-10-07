@@ -49,14 +49,14 @@ func (g *Gomailer) Send(templatePath, username, email, activationURL string) err
 	msg.SetBody("text/html", body.String())
 
 	// send email
+	var retryErr error
 	for i := 0; i < maxRetries; i++ {
-		if err := g.dialer.DialAndSend(msg); err != nil {
-			log.Println("mailer: failed to send email to ", email, ": ", err, "in attempt ", i+1)
+		if retryErr = g.dialer.DialAndSend(msg); retryErr != nil {
 			time.Sleep(time.Second * time.Duration(i+1))
 			continue
 		}
 		log.Println("mailer: email successfully sent to ", email)
 		return nil
 	}
-	return fmt.Errorf("mailer: failed to send email to %s after %d attempts", email, maxRetries)
+	return fmt.Errorf("mailer: failed to send email to %s after %d attempts: %w", email, maxRetries, retryErr)
 }
