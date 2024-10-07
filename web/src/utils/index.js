@@ -1,7 +1,7 @@
 import axios from "axios";
 
 export function confirm(token) {
-    return axios.get(`/authentication/user/${token}`)
+    return axios.put(`/users/activate/${token}`)
         .then(response => {
             console.log(response.status);
             return response.status;
