@@ -51,6 +51,12 @@ func main() {
 				sender:   env.GetString("MAIL_SENDER", "banghao.ch@gmail.com"),
 			},
 		},
+		auth: authConfig{
+			basic: basicAuthConfig{
+				username: env.GetString("BASIC_AUTH_USERNAME", "admin"),
+				password: env.GetString("BASIC_AUTH_PASSWORD", "admin"),
+			},
+		},
 	}
 
 	logger := zap.Must(zap.NewProduction()).Sugar()
