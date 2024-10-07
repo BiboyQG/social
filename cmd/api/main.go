@@ -6,6 +6,7 @@ import (
 	"github.com/biboyqg/social/internal/db"
 	"github.com/biboyqg/social/internal/env"
 	"github.com/biboyqg/social/internal/store"
+	"github.com/biboyqg/social/internal/mailer"
 	"go.uber.org/zap"
 )
 
@@ -31,6 +32,7 @@ func main() {
 	cfg := config{
 		addr:   env.GetString("ADDR", ":8081"),
 		apiURL: env.GetString("EXTERNAL_URL", "localhost:8081"),
+		frontendURL: env.GetString("FRONTEND_URL", "http://localhost:5173"),
 		db: dbConfig{
 			addr:         env.GetString("DB_ADDR", "postgresql://admin:adminpassword@localhost:5432/socialnetwork?sslmode=disable"),
 			maxOpenConns: env.GetInt("DB_MAX_OPEN_CONNS", 30),
@@ -41,6 +43,13 @@ func main() {
 		version: env.GetString("VERSION", "0.0.1"),
 		mail: mailConfig{
 			exp: env.GetDuration("MAIL_EXP", 3*24*time.Hour),
+			gomail: gomailConfig{
+				host:     env.GetString("MAIL_HOST", "smtp.gmail.com"),
+				port:     env.GetInt("MAIL_PORT", 587),
+				username: env.GetString("MAIL_USERNAME", "banghao.ch@gmail.com"),
+				password: env.GetString("MAIL_PASSWORD", "password"),
+				sender:   env.GetString("MAIL_SENDER", "banghao.ch@gmail.com"),
+			},
 		},
 	}
 
@@ -61,10 +70,19 @@ func main() {
 
 	store := store.NewStorage(db)
 
+	mailer := mailer.NewGomailer(
+		cfg.mail.gomail.host,
+		cfg.mail.gomail.port,
+		cfg.mail.gomail.username,
+		cfg.mail.gomail.password,
+		cfg.mail.gomail.sender,
+	)
+
 	app := &application{
 		config: cfg,
 		store:  store,
 		logger: logger,
+		mailer: mailer,
 	}
 
 	mux := app.mount()

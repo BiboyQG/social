@@ -4,8 +4,10 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"errors"
+	"fmt"
 	"net/http"
 
+	"github.com/biboyqg/social/internal/mailer"
 	"github.com/biboyqg/social/internal/store"
 	"github.com/google/uuid"
 )
@@ -64,6 +66,24 @@ func (app *application) registerUserHandler(w http.ResponseWriter, r *http.Reque
 		default:
 			app.internalServerError(w, r, err)
 		}
+		return
+	}
+
+	activationURL := fmt.Sprintf("%s/confirm/%s", app.config.frontendURL, plainToken)
+
+	if err := app.mailer.Send(
+		mailer.TemplatePath,
+		user.Username,
+		user.Email,
+		activationURL,
+	); err != nil {
+		app.logger.Errorw("failed to send email", "error", err)
+
+		if err := app.store.Users.Delete(ctx, user.ID); err != nil {
+			app.logger.Errorw("failed to delete user", "error", err)
+		}
+
+		app.internalServerError(w, r, err)
 		return
 	}
 
