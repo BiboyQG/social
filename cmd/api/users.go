@@ -63,17 +63,13 @@ func (app *application) usersContextMiddleware(next http.Handler) http.Handler {
 	})
 }
 
-type authUserPayload struct {
-	UserID int64 `json:"user_id"`
-}
-
 //	@Summary		Follow User
 //	@Description	Follow a user by user ID
 //	@Tags			Users
 //	@Accept			json
 //	@Produce		json
 //	@Param			userID	path	int	true	"User ID"
-//	@Success		204
+//	@Success		201
 //	@Failure		400	{object}	map[string]string
 //	@Failure		404	{object}	map[string]string
 //	@Failure		500	{object}	map[string]string
@@ -81,20 +77,20 @@ type authUserPayload struct {
 //	@Router			/users/{userID}/follow [put]
 func (app *application) followUserHandler(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	userToFollow, err := app.getUserFromCtx(r)
+	follower, err := app.getUserFromCtx(r)
 	if err != nil {
 		app.internalServerError(w, r, err)
 		return
 	}
 
 	// TODO: Revert back to auth userID from ctx
-	var payload authUserPayload
-	if err := readJSON(w, r, &payload); err != nil {
+	userToFollowID, err := strconv.ParseInt(chi.URLParam(r, "userID"), 10, 64)
+	if err != nil {
 		app.badRequest(w, r, err)
 		return
 	}
 
-	if err := app.store.Followers.Follow(ctx, userToFollow.ID, payload.UserID); err != nil {
+	if err := app.store.Followers.Follow(ctx, userToFollowID, follower.ID); err != nil {
 		switch {
 		case errors.Is(err, store.ErrAlreadyExists):
 			app.conflict(w, r, err)
@@ -104,7 +100,7 @@ func (app *application) followUserHandler(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	if err := app.jsonResponse(w, http.StatusNoContent, nil); err != nil {
+	if err := app.jsonResponse(w, http.StatusCreated, nil); err != nil {
 		app.internalServerError(w, r, err)
 	}
 }
@@ -115,7 +111,7 @@ func (app *application) followUserHandler(w http.ResponseWriter, r *http.Request
 //	@Accept			json
 //	@Produce		json
 //	@Param			userID	path	int	true	"User ID"
-//	@Success		204
+//	@Success		200
 //	@Failure		400	{object}	map[string]string
 //	@Failure		404	{object}	map[string]string
 //	@Failure		500	{object}	map[string]string
@@ -124,25 +120,24 @@ func (app *application) followUserHandler(w http.ResponseWriter, r *http.Request
 func (app *application) unfollowUserHandler(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
-	userToUnfollow, err := app.getUserFromCtx(r)
+	follower, err := app.getUserFromCtx(r)
 	if err != nil {
 		app.internalServerError(w, r, err)
 		return
 	}
 
-	// TODO: Revert back to auth userID from ctx
-	var payload authUserPayload
-	if err := readJSON(w, r, &payload); err != nil {
+	userToUnfollowID, err := strconv.ParseInt(chi.URLParam(r, "userID"), 10, 64)
+	if err != nil {
 		app.badRequest(w, r, err)
 		return
 	}
 
-	if err := app.store.Followers.Unfollow(ctx, userToUnfollow.ID, payload.UserID); err != nil {
+	if err := app.store.Followers.Unfollow(ctx, userToUnfollowID, follower.ID); err != nil {
 		app.internalServerError(w, r, err)
 		return
 	}
 
-	if err := app.jsonResponse(w, http.StatusNoContent, nil); err != nil {
+	if err := app.jsonResponse(w, http.StatusOK, nil); err != nil {
 		app.internalServerError(w, r, err)
 	}
 }

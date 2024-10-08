@@ -49,14 +49,17 @@ func (app *application) createPostHandler(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	userID := 1
+	user, err := app.getUserFromCtx(r)
+	if err != nil {
+		app.internalServerError(w, r, err)
+		return
+	}
 
 	post := store.Post{
 		Title:   payload.Title,
 		Content: payload.Content,
 		Tags:    payload.Tags,
-		// TODO: get user id from auth
-		UserID: int64(userID),
+		UserID:  user.ID,
 	}
 
 	ctx := r.Context()

@@ -28,7 +28,6 @@ import (
 // @securityDefinitions.apikey	ApiKeyAuth
 // @in							header
 // @name						Authorization
-// @description				JWT authorization header
 func main() {
 	cfg := config{
 		addr:        env.GetString("ADDR", ":8081"),

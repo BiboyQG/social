@@ -41,10 +41,13 @@ func (app *application) getUserFeedHandler(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	userID := int64(1)
-	// userID := ctx.Value(userIDKey).(int64)
+	user, err := app.getUserFromCtx(r)
+	if err != nil {
+		app.internalServerError(w, r, err)
+		return
+	}
 
-	feed, err := app.store.Posts.GetUserFeed(ctx, userID, p)
+	feed, err := app.store.Posts.GetUserFeed(ctx, user.ID, p)
 	if err != nil {
 		app.internalServerError(w, r, err)
 		return

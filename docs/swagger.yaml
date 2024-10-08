@@ -478,8 +478,8 @@ paths:
       produces:
       - application/json
       responses:
-        "204":
-          description: No Content
+        "201":
+          description: Created
         "400":
           description: Bad Request
           schema:
@@ -560,8 +560,8 @@ paths:
       produces:
       - application/json
       responses:
-        "204":
-          description: No Content
+        "200":
+          description: OK
         "400":
           description: Bad Request
           schema:
@@ -681,7 +681,6 @@ paths:
       - Feed
 securityDefinitions:
   ApiKeyAuth:
-    description: JWT authorization header
     in: header
     name: Authorization
     type: apiKey
