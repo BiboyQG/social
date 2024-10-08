@@ -1041,6 +1041,9 @@ const docTemplate = `{
                 "is_active": {
                     "type": "boolean"
                 },
+                "role_id": {
+                    "type": "integer"
+                },
                 "username": {
                     "type": "string"
                 }
