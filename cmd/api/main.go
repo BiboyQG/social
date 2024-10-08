@@ -3,10 +3,11 @@ package main
 import (
 	"time"
 
+	"github.com/biboyqg/social/internal/auth"
 	"github.com/biboyqg/social/internal/db"
 	"github.com/biboyqg/social/internal/env"
-	"github.com/biboyqg/social/internal/store"
 	"github.com/biboyqg/social/internal/mailer"
+	"github.com/biboyqg/social/internal/store"
 	"go.uber.org/zap"
 )
 
@@ -30,8 +31,8 @@ import (
 // @description				JWT authorization header
 func main() {
 	cfg := config{
-		addr:   env.GetString("ADDR", ":8081"),
-		apiURL: env.GetString("EXTERNAL_URL", "localhost:8081"),
+		addr:        env.GetString("ADDR", ":8081"),
+		apiURL:      env.GetString("EXTERNAL_URL", "localhost:8081"),
 		frontendURL: env.GetString("FRONTEND_URL", "http://localhost:5173"),
 		db: dbConfig{
 			addr:         env.GetString("DB_ADDR", "postgresql://admin:adminpassword@localhost:5432/socialnetwork?sslmode=disable"),
@@ -55,6 +56,12 @@ func main() {
 			basic: basicAuthConfig{
 				username: env.GetString("BASIC_AUTH_USERNAME", "admin"),
 				password: env.GetString("BASIC_AUTH_PASSWORD", "admin"),
+			},
+			token: tokenConfig{
+				secret: env.GetString("JWT_SECRET", "secret"),
+				exp:    env.GetDuration("JWT_EXP", 7*24*time.Hour),
+				aud:    env.GetString("JWT_AUD", "social"),
+				iss:    env.GetString("JWT_ISS", "social"),
 			},
 		},
 	}
@@ -84,11 +91,14 @@ func main() {
 		cfg.mail.gomail.sender,
 	)
 
+	jwtAuthenticator := auth.NewJWTAuthenticator(cfg.auth.token.secret, cfg.auth.token.aud, cfg.auth.token.iss)
+
 	app := &application{
-		config: cfg,
-		store:  store,
-		logger: logger,
-		mailer: mailer,
+		config:        cfg,
+		store:         store,
+		logger:        logger,
+		mailer:        mailer,
+		authenticator: jwtAuthenticator,
 	}
 
 	mux := app.mount()

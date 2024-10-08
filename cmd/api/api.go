@@ -8,6 +8,7 @@ import (
 	"github.com/biboyqg/social/docs"
 	"github.com/biboyqg/social/internal/mailer"
 	"github.com/biboyqg/social/internal/store"
+	"github.com/biboyqg/social/internal/auth"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/cors"
@@ -16,10 +17,11 @@ import (
 )
 
 type application struct {
-	config config
-	store  store.Storage
-	logger *zap.SugaredLogger
-	mailer mailer.Mailer
+	config        config
+	store         store.Storage
+	logger        *zap.SugaredLogger
+	mailer        mailer.Mailer
+	authenticator auth.Authenticator
 }
 
 type config struct {
@@ -55,11 +57,19 @@ type gomailConfig struct {
 
 type authConfig struct {
 	basic basicAuthConfig
+	token tokenConfig
 }
 
 type basicAuthConfig struct {
 	username string
 	password string
+}
+
+type tokenConfig struct {
+	secret string
+	aud    string
+	iss    string
+	exp    time.Duration
 }
 
 func (app *application) mount() http.Handler {
@@ -71,7 +81,7 @@ func (app *application) mount() http.Handler {
 	r.Use(middleware.Recoverer)
 	r.Use(cors.Handler(cors.Options{
 		// AllowedOrigins:   []string{"https://foo.com"}, // Use this to allow specific origin hosts
-		AllowedOrigins:   []string{"https://*", "http://*"},
+		AllowedOrigins: []string{"https://*", "http://*"},
 		// AllowOriginFunc:  func(r *http.Request, origin string) bool { return true },
 		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
 		AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type", "X-CSRF-Token"},
@@ -121,6 +131,7 @@ func (app *application) mount() http.Handler {
 		// Public routes
 		r.Route("/authentication", func(r chi.Router) {
 			r.Post("/user", app.registerUserHandler)
+			r.Post("/token", app.createTokenHandler)
 		})
 	})
 

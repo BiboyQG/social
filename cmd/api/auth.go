@@ -5,11 +5,13 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
+	"time"
 	"net/http"
 
 	"github.com/biboyqg/social/internal/mailer"
 	"github.com/biboyqg/social/internal/store"
 	"github.com/google/uuid"
+	"github.com/golang-jwt/jwt/v5"
 )
 
 type RegisterUserPayload struct {
@@ -88,6 +90,68 @@ func (app *application) registerUserHandler(w http.ResponseWriter, r *http.Reque
 	}
 
 	if err := app.jsonResponse(w, http.StatusCreated, nil); err != nil {
+		app.internalServerError(w, r, err)
+	}
+}
+
+type CreateTokenPayload struct {
+	Email    string `json:"email" validate:"required,email,max=255"`
+	Password string `json:"password" validate:"required,min=3,max=72"`
+}
+
+//	@Summary		Create Token
+//	@Description	Create a token for a user
+//	@Tags			Authentication
+//	@Accept			json
+//	@Produce		json
+//	@Param			token	body		CreateTokenPayload	true	"Token credentials"
+//	@Success		200		{object}	map[string]string
+//	@Failure		400		{object}	map[string]string
+//	@Failure		401		{object}	map[string]string
+//	@Failure		500		{object}	map[string]string
+//	@Router			/authentication/token [post]
+func (app *application) createTokenHandler(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	var payload CreateTokenPayload
+
+	if err := readJSON(w, r, &payload); err != nil {
+		app.badRequest(w, r, err)
+		return
+	}
+
+	if err := Validate.Struct(payload); err != nil {
+		app.badRequest(w, r, err)
+		return
+	}
+
+	user, err := app.store.Users.GetByEmail(ctx, payload.Email)
+	if err != nil {
+		app.badRequest(w, r, err)
+		return
+	}
+
+	if err := user.Password.Compare(payload.Password); err != nil {
+		app.unauthorized(w, r, err)
+		return
+	}
+
+	claims := jwt.MapClaims{
+		"sub": user.ID,
+		"exp": time.Now().Add(app.config.auth.token.exp).Unix(),
+		"iat": time.Now().Unix(),
+		"nbf": time.Now().Unix(),
+		"iss": app.config.auth.token.iss,
+		"aud": app.config.auth.token.aud,
+	}
+
+	token, err := app.authenticator.GenerateToken(claims)
+	if err != nil {
+		app.internalServerError(w, r, err)
+		return
+	}
+
+	if err := app.jsonResponse(w, http.StatusOK, map[string]string{"token": token}); err != nil {
 		app.internalServerError(w, r, err)
 	}
 }
