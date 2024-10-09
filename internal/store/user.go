@@ -25,10 +25,11 @@ type User struct {
 	CreatedAt string   `json:"created_at"`
 	IsActive  bool     `json:"is_active"`
 	RoleID    int64    `json:"role_id"`
+	Role      Role     `json:"role"`
 }
 
 type Password struct {
-	text *string 
+	text *string
 	hash []byte
 }
 
@@ -58,7 +59,7 @@ func (s *UserStore) Create(ctx context.Context, tx *sql.Tx, user *User) error {
 	`
 	ctx, cancel := context.WithTimeout(ctx, QueryTimeoutDuration)
 	defer cancel()
-	
+
 	row := tx.QueryRowContext(
 		ctx,
 		query,
@@ -86,9 +87,10 @@ func (s *UserStore) Create(ctx context.Context, tx *sql.Tx, user *User) error {
 
 func (s *UserStore) GetByID(ctx context.Context, id int64) (*User, error) {
 	query := `
-		SELECT id, username, email, created_at, password
-		FROM users
-		WHERE id = $1
+		SELECT u.id, u.username, u.email, u.created_at, u.password, r.id, r.name, r.level, r.description
+		FROM users u
+		JOIN roles r ON r.id = u.role_id
+		WHERE u.id = $1 AND u.is_active = true
 	`
 	ctx, cancel := context.WithTimeout(ctx, QueryTimeoutDuration)
 	defer cancel()
@@ -101,6 +103,10 @@ func (s *UserStore) GetByID(ctx context.Context, id int64) (*User, error) {
 		&user.Email,
 		&user.CreatedAt,
 		&user.Password.hash,
+		&user.Role.ID,
+		&user.Role.Name,
+		&user.Role.Level,
+		&user.Role.Description,
 	)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
@@ -175,15 +181,15 @@ func (s *UserStore) Activate(ctx context.Context, token string) error {
 		}
 
 		user.IsActive = true
-		
+
 		if err := s.update(ctx, tx, user); err != nil {
 			return err
 		}
-		
+
 		if err := s.deleteUserInvitations(ctx, tx, user.ID); err != nil {
 			return err
 		}
-		
+
 		return nil
 	})
 }
